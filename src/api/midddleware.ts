@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
+import { config } from '../config.js';
 
-export function middlewareLogResponses(
+export function middlewareLogResponse(
   req: Request,
   res: Response,
   next: NextFunction
@@ -13,5 +14,14 @@ export function middlewareLogResponses(
       );
     }
   });
+  next();
+}
+
+export function middlewareMetricsInc(
+  _: Request,
+  __: Response,
+  next: NextFunction
+) {
+  config.fileserverHits++;
   next();
 }
