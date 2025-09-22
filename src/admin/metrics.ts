@@ -2,7 +2,14 @@ import { Request, Response } from 'express';
 import { config } from '../config.js';
 
 export function handlerMetrics(_: Request, res: Response) {
-  res.status(200).send(`Hits: ${config.fileserverHits}`);
+  res.status(200).set('Content-Type', 'text/html; charset=utf-8').send(`
+    <html>
+      <body>
+        <h1>Welcome, Chirpy Admin</h1>
+        <p>Chirpy has been visited ${config.fileserverHits} times!</p>
+      </body>
+    </html>
+  `);
 }
 
 export function handlerReset(_: Request, res: Response) {
