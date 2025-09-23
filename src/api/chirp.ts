@@ -14,9 +14,7 @@ type ValidateChirpError = {
 
 export function handlerValidateChirp(req: Request, res: Response) {
   const resBody: ValidateChirpResponse = { valid: true };
-  res.header("Content-Type", "application/json");
-
-  const chirp = req.body as RequestChirp;
+  const chirp: RequestChirp = req.body;
 
   if (chirp.body.length === 0) {
     const errBody: ValidateChirpError = { error: "Chirp cannot be empty" };
