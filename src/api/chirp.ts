@@ -45,9 +45,7 @@ export function handlerValidateChirp(req: Request, res: Response) {
   }
 
   if (chirp.body.length > 140) {
-    const errBody: ValidateChirpError = { error: "Chirp is too long" };
-    res.status(400).json(errBody);
-    return;
+    throw new Error("Something went wrong on our end");
   }
 
   if (containsBadWords(chirp.body)) {
