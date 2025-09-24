@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { BadRequestError } from "./errors.js";
 
 type RequestChirp = {
   body: string;
@@ -45,7 +46,7 @@ export function handlerValidateChirp(req: Request, res: Response) {
   }
 
   if (chirp.body.length > 140) {
-    throw new Error("Something went wrong on our end");
+    throw new BadRequestError("Chirp is too long. Max length is 140");
   }
 
   if (containsBadWords(chirp.body)) {

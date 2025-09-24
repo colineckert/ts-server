@@ -2,7 +2,7 @@ import express from "express";
 import {
   middlewareLogResponse,
   middlewareMetricsInc,
-  errorHandler,
+  errorMiddleware,
 } from "./api/midddleware.js";
 import { handlerReadiness } from "./api/readiness.js";
 import { handlerMetrics, handlerReset } from "./admin/metrics.js";
@@ -29,7 +29,7 @@ app.post("/api/validate_chirp", (req, res, next) => {
   Promise.resolve(handlerValidateChirp(req, res)).catch(next);
 });
 
-app.use(errorHandler);
+app.use(errorMiddleware);
 
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
