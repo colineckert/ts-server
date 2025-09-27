@@ -11,8 +11,3 @@ export function handlerMetrics(_: Request, res: Response) {
     </html>
   `);
 }
-
-export function handlerReset(_: Request, res: Response) {
-  config.api.fileServerHits = 0;
-  res.status(200).send(`Metrics reset`);
-}
