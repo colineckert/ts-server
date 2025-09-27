@@ -1,14 +1,23 @@
 import { Request, Response } from "express";
-import { createUser } from "src/db/queries/users";
+import { createUser } from "../db/queries/users.js";
+import { BadRequestError } from "./errors.js";
 
-type CreateUserBody = {
+type CreateUserParams = {
   email: string;
 };
 
 export async function handlerCreateUser(req: Request, res: Response) {
-  const newUser: CreateUserBody = req.body;
+  const params: CreateUserParams = req.body;
 
-  const result = await createUser(newUser);
+  if (!params.email) {
+    throw new BadRequestError("Missing required create user fields");
+  }
 
-  res.status(201).json(result);
+  const user = await createUser(params);
+
+  if (!user) {
+    throw new Error("Failed to create user");
+  }
+
+  res.status(201).json(user);
 }
