@@ -19,7 +19,7 @@ export async function handlerCreateUser(req: Request, res: Response) {
 
   const user = await createUser({
     email: params.email,
-    hashed_password: hashedPassword,
+    hashedPassword: hashedPassword,
   });
 
   if (!user) {

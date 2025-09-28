@@ -18,6 +18,7 @@ import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { config } from "./config.js";
 import { handlerCreateUser } from "./api/users.js";
+import { handlerLogin } from "./api/login.js";
 
 const migrationClient = postgres(config.db.url, { max: 1 });
 await migrate(drizzle(migrationClient), config.db.migrationConfig);
@@ -30,6 +31,10 @@ app.use("/app", middlewareMetricsInc, express.static("./src/app"));
 
 app.get("/api/healthz", (req, res, next) => {
   Promise.resolve(handlerReadiness(req, res)).catch(next);
+});
+
+app.post("/api/login", (req, res, next) => {
+  Promise.resolve(handlerLogin(req, res)).catch(next);
 });
 
 app.post("/api/users", (req, res, next) => {
