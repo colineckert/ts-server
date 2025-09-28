@@ -9,7 +9,7 @@ import {
 import { handlerReadiness } from "./api/readiness.js";
 import { handlerMetrics } from "./admin/metrics.js";
 import { handlerReset } from "./admin/reset.js";
-import { handlerCreateChirp } from "./api/chirp.js";
+import { handlerCreateChirp, handlerGetChirps } from "./api/chirp.js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { config } from "./config.js";
@@ -29,6 +29,9 @@ app.get("/api/healthz", (req, res, next) => {
 });
 app.post("/api/users", (req, res, next) => {
   Promise.resolve(handlerCreateUser(req, res)).catch(next);
+});
+app.get("/api/chirps", (req, res, next) => {
+  Promise.resolve(handlerGetChirps(req, res)).catch(next);
 });
 app.post("/api/chirps", (req, res, next) => {
   Promise.resolve(handlerCreateChirp(req, res)).catch(next);
