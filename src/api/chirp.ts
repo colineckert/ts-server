@@ -1,12 +1,10 @@
 import { Request, Response } from "express";
 import { BadRequestError } from "./errors.js";
+import { createChirp } from "../db/queries/chirps.js";
 
-type RequestChirp = {
+type CreateChirpParams = {
   body: string;
-};
-
-type ValidateChirpResponse = {
-  cleanedBody: string;
+  userId: string;
 };
 
 type ValidateChirpError = {
@@ -35,23 +33,28 @@ function cleanBadWords(text: string): string {
   return cleanedText.join(" ");
 }
 
-export function handlerValidateChirp(req: Request, res: Response) {
-  const chirp: RequestChirp = req.body;
-  const resBody: ValidateChirpResponse = { cleanedBody: chirp.body };
+export async function handlerCreateChirp(req: Request, res: Response) {
+  const params: CreateChirpParams = req.body;
 
-  if (chirp.body.length === 0) {
+  if (params.body.length === 0) {
     const errBody: ValidateChirpError = { error: "Chirp cannot be empty" };
     res.status(400).json(errBody);
     return;
   }
 
-  if (chirp.body.length > 140) {
+  if (params.body.length > 140) {
     throw new BadRequestError("Chirp is too long. Max length is 140");
   }
 
-  if (containsBadWords(chirp.body)) {
-    resBody.cleanedBody = cleanBadWords(chirp.body);
+  if (containsBadWords(params.body)) {
+    params.body = cleanBadWords(params.body);
   }
 
-  res.status(200).json(resBody);
+  const newChirp = await createChirp(params);
+
+  if (!newChirp) {
+    throw new Error("Failed to create chirp");
+  }
+
+  res.status(201).json(newChirp);
 }
