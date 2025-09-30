@@ -14,36 +14,11 @@ type ValidateChirpError = {
 
 const badWords = ["kerfuffle", "sharbert", "fornax"];
 
-function containsBadWords(text: string): boolean {
-  const lowerText = text.toLowerCase();
-  return badWords.some((word) => lowerText.includes(word));
-}
-
-function cleanBadWords(text: string): string {
-  const cleanedText: string[] = [];
-
-  const words = text.split(" ");
-  for (const word of words) {
-    if (badWords.includes(word.toLowerCase())) {
-      cleanedText.push("****");
-    } else {
-      cleanedText.push(word);
-    }
-  }
-
-  return cleanedText.join(" ");
-}
-
 export async function handlerCreateChirp(req: Request, res: Response) {
   const params: CreateChirpParams = req.body;
 
   const token = getBearerToken(req);
-  const secret = config.jwt.secret;
-  const userId = validateJWT(token, secret);
-
-  if (!userId) {
-    throw new UnauthorizeError("Failed to create chirp. Unauthorized user.");
-  }
+  const userId = validateJWT(token, config.jwt.secret);
 
   if (params.body.length === 0) {
     const errBody: ValidateChirpError = { error: "Chirp cannot be empty" };
@@ -51,24 +26,37 @@ export async function handlerCreateChirp(req: Request, res: Response) {
     return;
   }
 
-  if (params.body.length > 140) {
-    throw new BadRequestError("Chirp is too long. Max length is 140");
+  const cleaned = validateChirp(params.body);
+  const chirp = await createChirp({ body: cleaned, userId: userId });
+
+  res.status(201).json(chirp);
+}
+
+function validateChirp(body: string) {
+  const maxChirpLength = 140;
+
+  if (body.length > maxChirpLength) {
+    throw new BadRequestError(
+      `Chirp is too long. Max length is ${maxChirpLength}`,
+    );
   }
 
-  if (containsBadWords(params.body)) {
-    params.body = cleanBadWords(params.body);
+  return getCleanedBody(body, badWords);
+}
+
+function getCleanedBody(body: string, badWords: string[]) {
+  const words = body.split(" ");
+
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i];
+    const loweredWord = word.toLowerCase();
+    if (badWords.includes(loweredWord)) {
+      words[i] = "****";
+    }
   }
 
-  const newChirp = await createChirp({
-    userId,
-    body: params.body,
-  });
-
-  if (!newChirp) {
-    throw new Error("Failed to create chirp");
-  }
-
-  res.status(201).json(newChirp);
+  const cleaned = words.join(" ");
+  return cleaned;
 }
 
 export async function handlerGetChirps(_: Request, res: Response) {
