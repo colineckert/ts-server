@@ -1,5 +1,12 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { checkPassword, hashPassword, makeJWT, validateJWT } from "./auth.js";
+import {
+  checkPassword,
+  getBearerToken,
+  hashPassword,
+  makeJWT,
+  validateJWT,
+} from "./auth.js";
+import { Request } from "express";
 
 describe("Password Hashing", () => {
   const password1 = "correctPassword123!";
@@ -31,5 +38,19 @@ describe("JWT validation", () => {
   it("should return the sub for valid jwt", async () => {
     const result = validateJWT(jwt, secret);
     expect(result).toEqual(userId);
+  });
+});
+
+describe("JWT validation", () => {
+  const token = "testtoken123";
+  const mockRequest: Partial<Request> = {
+    headers: {
+      authorization: `Bearer ${token}`,
+    },
+  };
+
+  it("should return the token string", async () => {
+    const result = getBearerToken(mockRequest as Request);
+    expect(result).toEqual(token);
   });
 });

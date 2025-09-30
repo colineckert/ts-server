@@ -2,11 +2,6 @@ import "dotenv/config";
 
 import type { MigrationConfig } from "drizzle-orm/migrator";
 
-type Config = {
-  api: APIConfig;
-  db: DBConfig;
-};
-
 type APIConfig = {
   fileServerHits: number;
   port: number;
@@ -16,6 +11,18 @@ type APIConfig = {
 type DBConfig = {
   url: string;
   migrationConfig: MigrationConfig;
+};
+
+type JWTConfig = {
+  defaultDuration: number;
+  secret: string;
+  issuer: string;
+};
+
+type Config = {
+  api: APIConfig;
+  db: DBConfig;
+  jwt: JWTConfig;
 };
 
 function envOrThrow(key: string) {
@@ -39,5 +46,10 @@ export const config: Config = {
   db: {
     url: envOrThrow("DB_URL"),
     migrationConfig: migrationConfig,
+  },
+  jwt: {
+    defaultDuration: 60 * 60, // 1 hour in seconds
+    secret: envOrThrow("SECRET"),
+    issuer: "chirpy",
   },
 };

@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
-import { BadRequestError, NotFoundError } from "./errors.js";
+import { BadRequestError, NotFoundError, UnauthorizeError } from "./errors.js";
 import { createChirp, getChirp, getChirps } from "../db/queries/chirps.js";
+import { getBearerToken, validateJWT } from "../auth.js";
+import { config } from "../config.js";
 
 type CreateChirpParams = {
   body: string;
-  userId: string;
 };
 
 type ValidateChirpError = {
@@ -36,6 +37,14 @@ function cleanBadWords(text: string): string {
 export async function handlerCreateChirp(req: Request, res: Response) {
   const params: CreateChirpParams = req.body;
 
+  const token = getBearerToken(req);
+  const secret = config.jwt.secret;
+  const userId = validateJWT(token, secret);
+
+  if (!userId) {
+    throw new UnauthorizeError("Failed to create chirp. Unauthorized user.");
+  }
+
   if (params.body.length === 0) {
     const errBody: ValidateChirpError = { error: "Chirp cannot be empty" };
     res.status(400).json(errBody);
@@ -50,7 +59,11 @@ export async function handlerCreateChirp(req: Request, res: Response) {
     params.body = cleanBadWords(params.body);
   }
 
-  const newChirp = await createChirp(params);
+  const newChirp = await createChirp({
+    userId,
+    body: params.body,
+  });
+
   if (!newChirp) {
     throw new Error("Failed to create chirp");
   }
