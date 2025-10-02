@@ -8,13 +8,14 @@ import {
   makeRefreshToken,
 } from "../auth.js";
 import { config } from "../config.js";
-import { NewUser, RefreshToken } from "../db/schema.js";
+import { RefreshToken } from "../db/schema.js";
 import {
   getRefreshToken,
   revokeRefreshToken,
 } from "../db/queries/refreshTokens.js";
+import { UserResponse } from "./users.js";
 
-export type UserResponse = Omit<NewUser, "hashed_password"> & {
+export type LoginResponse = UserResponse & {
   token: string;
   refreshToken: string;
 };
@@ -59,7 +60,7 @@ export async function handlerLogin(req: Request, res: Response) {
     updatedAt: user.updatedAt,
     token,
     refreshToken: refreshToken.token,
-  } satisfies UserResponse);
+  } satisfies LoginResponse);
 }
 
 function isTokenExpired(token: RefreshToken): boolean {
