@@ -3,6 +3,9 @@ import jwt, { type JwtPayload } from "jsonwebtoken";
 import { UnauthorizeError } from "./api/errors.js";
 import { Request } from "express";
 import { config } from "./config.js";
+import { createRefreshToken } from "./db/queries/refreshTokens.js";
+
+const { randomBytes } = await import("node:crypto");
 
 export function hashPassword(password: string): Promise<string> {
   return argon2.hash(password);
@@ -67,4 +70,23 @@ export function getBearerToken(req: Request): string {
   }
 
   return splitAuth[1];
+}
+
+export async function makeRefreshToken(userId: string) {
+  const buf = randomBytes(256).toString("hex");
+
+  // refresh token expires in 60 days
+  const now = new Date();
+  const expiresAt = new Date(
+    new Date(now.getTime() + config.jwt.refreshTokenExpiry),
+  );
+
+  const refreshToken = await createRefreshToken({
+    token: buf,
+    userId,
+    expiresAt,
+    revokedAt: null,
+  });
+
+  return refreshToken;
 }

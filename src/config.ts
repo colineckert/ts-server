@@ -15,6 +15,7 @@ type DBConfig = {
 
 type JWTConfig = {
   defaultDuration: number;
+  refreshTokenExpiry: number;
   secret: string;
   issuer: string;
 };
@@ -49,6 +50,7 @@ export const config: Config = {
   },
   jwt: {
     defaultDuration: 60 * 60, // 1 hour in seconds
+    refreshTokenExpiry: 60 * 24 * 60 * 60 * 1000, // 60 days in ms
     secret: envOrThrow("SECRET"),
     issuer: "chirpy",
   },
