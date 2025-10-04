@@ -11,6 +11,7 @@ import { handlerMetrics } from "./admin/metrics.js";
 import { handlerReset } from "./admin/reset.js";
 import {
   handlerCreateChirp,
+  handlerDeleteChirp,
   handlerGetChirp,
   handlerGetChirps,
 } from "./api/chirp.js";
@@ -58,6 +59,9 @@ app.get("/api/chirps/:chirpId", (req, res, next) => {
 });
 app.post("/api/chirps", (req, res, next) => {
   Promise.resolve(handlerCreateChirp(req, res)).catch(next);
+});
+app.delete("/api/chirps/:chirpId", (req, res, next) => {
+  Promise.resolve(handlerDeleteChirp(req, res)).catch(next);
 });
 
 app.get("/admin/metrics", (req, res, next) => {
