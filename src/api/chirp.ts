@@ -5,6 +5,7 @@ import {
   deleteChirp,
   getChirp,
   getChirps,
+  getChirpsByAuthor,
 } from "../db/queries/chirps.js";
 import { getBearerToken, validateJWT } from "../auth.js";
 import { config } from "../config.js";
@@ -64,7 +65,18 @@ function getCleanedBody(body: string, badWords: string[]) {
   return cleaned;
 }
 
-export async function handlerGetChirps(_: Request, res: Response) {
+export async function handlerGetChirps(req: Request, res: Response) {
+  let authorId = "";
+  const authorIdQuery = req.query.authorId;
+
+  if (typeof authorIdQuery === "string") {
+    authorId = authorIdQuery;
+    const authorChirps = await getChirpsByAuthor(authorId);
+
+    res.status(200).json(authorChirps);
+    return;
+  }
+
   const chirps = await getChirps();
 
   res.status(200).json(chirps);
