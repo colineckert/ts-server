@@ -1,6 +1,6 @@
 import argon2 from "argon2";
 import jwt, { type JwtPayload } from "jsonwebtoken";
-import { UnauthorizeError } from "./api/errors.js";
+import { BadRequestError, UnauthorizeError } from "./api/errors.js";
 import { Request } from "express";
 import { config } from "./config.js";
 import { createRefreshToken } from "./db/queries/refreshTokens.js";
@@ -89,4 +89,18 @@ export async function makeRefreshToken(userId: string) {
   });
 
   return refreshToken;
+}
+
+export function getAPIKey(req: Request) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    throw new UnauthorizeError("No authorization header present");
+  }
+
+  const parts = authHeader.split(" ");
+  if (parts.length !== 2 || parts[0] !== "ApiKey") {
+    throw new BadRequestError("Invalid authorization header");
+  }
+
+  return parts[1];
 }

@@ -1,7 +1,12 @@
 import { Request, Response } from "express";
 import { createUser, updateUser, upgradeUser } from "../db/queries/users.js";
-import { BadRequestError, NotFoundError } from "./errors.js";
-import { getBearerToken, hashPassword, validateJWT } from "../auth.js";
+import { BadRequestError, NotFoundError, UnauthorizeError } from "./errors.js";
+import {
+  getAPIKey,
+  getBearerToken,
+  hashPassword,
+  validateJWT,
+} from "../auth.js";
 import { config } from "../config.js";
 import { NewUser } from "../db/schema.js";
 
@@ -63,6 +68,11 @@ type WebhookPayload = {
 };
 
 export async function handlerUpgradeUser(req: Request, res: Response) {
+  const apiKey = getAPIKey(req);
+  if (apiKey !== config.api.polkaKey) {
+    throw new UnauthorizeError("Invalid API key");
+  }
+
   const payload: WebhookPayload = req.body;
 
   if (payload.event !== "user.upgraded") {
