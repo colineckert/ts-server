@@ -1,14 +1,14 @@
-import { Request, Response } from "express";
-import { BadRequestError, ForbiddenError, NotFoundError } from "./errors.js";
+import { Request, Response } from 'express';
+import { BadRequestError, ForbiddenError, NotFoundError } from './errors.js';
 import {
   createChirp,
   deleteChirp,
   getChirp,
   getChirps,
   getChirpsByAuthor,
-} from "../db/queries/chirps.js";
-import { getBearerToken, validateJWT } from "../auth.js";
-import { config } from "../config.js";
+} from '../db/queries/chirps.js';
+import { getBearerToken, validateJWT } from '../auth.js';
+import { config } from '../config.js';
 
 type CreateChirpParams = {
   body: string;
@@ -18,7 +18,7 @@ type ValidateChirpError = {
   error: string;
 };
 
-const badWords = ["kerfuffle", "sharbert", "fornax"];
+const badWords = ['kerfuffle', 'sharbert', 'fornax'];
 
 export async function handlerCreateChirp(req: Request, res: Response) {
   const params: CreateChirpParams = req.body;
@@ -27,7 +27,7 @@ export async function handlerCreateChirp(req: Request, res: Response) {
   const userId = validateJWT(token, config.jwt.secret);
 
   if (params.body.length === 0) {
-    const errBody: ValidateChirpError = { error: "Chirp cannot be empty" };
+    const errBody: ValidateChirpError = { error: 'Chirp cannot be empty' };
     res.status(400).json(errBody);
     return;
   }
@@ -43,7 +43,7 @@ function validateChirp(body: string) {
 
   if (body.length > maxChirpLength) {
     throw new BadRequestError(
-      `Chirp is too long. Max length is ${maxChirpLength}`,
+      `Chirp is too long. Max length is ${maxChirpLength}`
     );
   }
 
@@ -51,33 +51,36 @@ function validateChirp(body: string) {
 }
 
 function getCleanedBody(body: string, badWords: string[]) {
-  const words = body.split(" ");
+  const words = body.split(' ');
 
   for (let i = 0; i < words.length; i++) {
     const word = words[i];
     const loweredWord = word.toLowerCase();
     if (badWords.includes(loweredWord)) {
-      words[i] = "****";
+      words[i] = '****';
     }
   }
 
-  const cleaned = words.join(" ");
+  const cleaned = words.join(' ');
   return cleaned;
 }
 
-export async function handlerGetChirps(req: Request, res: Response) {
-  let authorId = "";
-  const authorIdQuery = req.query.authorId;
+type GetChirpsQuery = {
+  authorId?: string;
+  sort?: 'asc' | 'desc';
+};
 
-  if (typeof authorIdQuery === "string") {
-    authorId = authorIdQuery;
-    const authorChirps = await getChirpsByAuthor(authorId);
+export async function handlerGetChirps(req: Request, res: Response) {
+  const { authorId, sort = 'asc' } = req.query as GetChirpsQuery;
+
+  if (!!authorId) {
+    const authorChirps = await getChirpsByAuthor(authorId, sort);
 
     res.status(200).json(authorChirps);
     return;
   }
 
-  const chirps = await getChirps();
+  const chirps = await getChirps(sort);
 
   res.status(200).json(chirps);
 }
@@ -109,7 +112,7 @@ export async function handlerDeleteChirp(req: Request, res: Response) {
   }
 
   if (chirp.userId !== userId) {
-    throw new ForbiddenError("You can only delete your own chirps");
+    throw new ForbiddenError('You can only delete your own chirps');
   }
 
   const deleteSuccess = await deleteChirp(chirpId);
